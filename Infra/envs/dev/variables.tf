@@ -33,7 +33,7 @@ variable "data_cidr" {
 # App Service
 variable "app_service_sku" {
   type    = string
-  default = "B2"
+  default = "F1"
 } # matches “single instance, B2” feel
 
 # SQL

@@ -5,7 +5,7 @@ resource "random_string" "sql" {
 }
 
 resource "azurerm_mssql_server" "server" {
-  name                         = "${var.name_prefix}-${var.env}-sql-${random_string.sql.result}"
+  name                         = "${var.name_prefix}-${var.env}-sql07-${random_string.sql.result}"
   resource_group_name          = var.resource_group_name
   location                     = var.location
   version                      = "12.0"

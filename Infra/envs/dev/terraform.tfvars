@@ -1,7 +1,7 @@
-subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+subscription_id = "464414fd-4f12-4697-9337-71dfbbc72992"
 name_prefix     = "oneview"
 env             = "dev"
-location        = "eastus"
+location        = "eastus2"
 
 sql_admin_login    = "sqladminuser"
 sql_admin_password = "SuperStrong!ChangeMe123"
