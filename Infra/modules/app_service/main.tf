@@ -15,9 +15,13 @@ resource "azurerm_linux_web_app" "app" {
 
   identity { type = "SystemAssigned" }
 
+  depends_on = [
+    azurerm_service_plan.plan # ✅ Wait until the plan is ready
+  ]
+
   site_config {
     application_stack { node_version = "18-lts" }
-    always_on = true
+    always_on = false
   }
 
   app_settings = {

@@ -1,31 +1,53 @@
-# Attach diagnostic settings for many resources to LAW
 locals {
   targets = var.targets
-}
 
-resource "azurerm_monitor_diagnostic_setting" "diag" {
-  count = length(local.targets)
+  # Build resource configurations dynamically
+  resource_configs = [
+    for target in local.targets : {
+      id = target
 
-  name                       = "to-law-${count.index}"
-  target_resource_id         = local.targets[count.index]
-  log_analytics_workspace_id = var.workspace_id
+      log_categories = (
+        can(regex("Microsoft.Web/sites", target)) ? [
+          "AppServiceHTTPLogs",
+          "AppServiceConsoleLogs",
+          "AppServiceAppLogs",
+          "AppServiceAuditLogs",
+          "AppServicePlatformLogs"
+        ] :
+        can(regex("Microsoft.KeyVault/vaults", target)) ? [
+          "AuditEvent"
+        ] :
+        can(regex("Microsoft.Network/networkSecurityGroups", target)) ? [
+          "NetworkSecurityGroupEvent",
+          "NetworkSecurityGroupRuleCounter"
+        ] :
+        can(regex("Microsoft.Storage/storageAccounts", target)) ? [
+          "StorageRead",
+          "StorageWrite",
+          "StorageDelete"
+        ] :
+        can(regex("Microsoft.Sql/servers", target)) ? [] :
+        can(regex("Microsoft.Sql/servers/.*/databases", target)) ? [
+          "SQLSecurityAuditEvents"
+        ] : []
+      )
 
-  dynamic "enabled_log" {
-    for_each = [
-      "AppServiceHTTPLogs",
-      "AppServiceConsoleLogs",
-      "AuditEvent",
-      "SQLSecurityAuditEvents",
-      "AzureDiagnostics"
-    ]
-    content {
-      category = enabled_log.value
+      metric_categories = (
+        can(regex("Microsoft.Web/sites", target)) ? ["AllMetrics"] :
+        can(regex("Microsoft.KeyVault/vaults", target)) ? ["AllMetrics"] :
+        can(regex("Microsoft.Network/networkSecurityGroups", target)) ? ["AllMetrics"] :
+        can(regex("Microsoft.Storage/storageAccounts", target)) ? ["Transaction", "Capacity"] :
+        []
+      )
     }
-  }
+  ]
 
-  metric {
-    category = "AllMetrics"
-    enabled  = true
+  # ✅ Generate valid diagnostic names (cleaner + safe)
+  sanitized_names = {
+    for cfg in local.resource_configs : cfg.id => lower(substr(
+      "to-law-${element(split(cfg.id, "/"), length(split(cfg.id, "/")) - 1)}",
+      0,
+      80
+    ))
   }
 }
-

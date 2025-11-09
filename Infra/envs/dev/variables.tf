@@ -1,7 +1,7 @@
 variable "subscription_id" { type = string }
 variable "location" {
   type    = string
-  default = "eastus"
+  default = "eastus2"
 }
 variable "env" {
   type    = string
@@ -33,7 +33,7 @@ variable "data_cidr" {
 # App Service
 variable "app_service_sku" {
   type    = string
-  default = "F1"
+  default = "B2"
 } # matches “single instance, B2” feel
 
 # SQL

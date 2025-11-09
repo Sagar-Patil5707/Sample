@@ -108,7 +108,7 @@ module "swa" {
   tags                = local.tags
 }
 
-module "diag" {
+module "diagnostics" {
   source              = "../../modules/diagnostics"
   resource_group_name = local.rg_name
   workspace_id        = module.law.workspace_id
