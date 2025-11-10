@@ -6,3 +6,13 @@ output "nsg_ids" { value = [
   azurerm_network_security_group.nsg_backend.id,
   azurerm_network_security_group.nsg_data.id
 ] }
+
+output "nsg_frontend_id" {
+  value = azurerm_network_security_group.nsg_frontend.id
+}
+output "nsg_backend_id" {
+  value = azurerm_network_security_group.nsg_backend.id
+}
+output "nsg_data_id" {
+  value = azurerm_network_security_group.nsg_data.id
+}

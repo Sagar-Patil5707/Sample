@@ -12,31 +12,35 @@ resource "azurerm_linux_web_app" "app" {
   resource_group_name = var.resource_group_name
   location            = var.location
   service_plan_id     = azurerm_service_plan.plan.id
+  https_only          = true
 
-  identity { type = "SystemAssigned" }
-
-  depends_on = [
-    azurerm_service_plan.plan # ✅ Wait until the plan is ready
-  ]
-
-  site_config {
-    application_stack { node_version = "18-lts" }
-    always_on = false
+  identity {
+    type = "SystemAssigned"
   }
 
+  site_config {
+    application_stack {
+      docker_image_name   = "${var.image_name}:${var.image_tag}"
+      docker_registry_url = "https://${var.acr_login_server}"
+    }
+
+    always_on                               = true
+    container_registry_use_managed_identity = true
+
+  }
+
+
   app_settings = {
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE   = "false"
+    WEBSITES_PORT                         = var.container_port
     APPLICATIONINSIGHTS_CONNECTION_STRING = var.app_insights_connection_str
-    # Example connection string (use Key Vault in real life)
-    DB_SERVER = var.sql_server_fqdn
-    DB_NAME   = var.sql_database_name
-    # Use Managed Identity + AAD auth for production
+    DB_SERVER                             = var.sql_server_fqdn
+    DB_NAME                               = var.sql_database_name
   }
 
   tags = var.tags
 }
 
-# VNet integration (to reach SQL private endpoint)
+# VNet Integration
 resource "azurerm_app_service_virtual_network_swift_connection" "vnet_integration" {
   app_service_id = azurerm_linux_web_app.app.id
   subnet_id      = var.backend_subnet_id

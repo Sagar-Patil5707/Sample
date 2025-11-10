@@ -13,3 +13,17 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+variable "acr_login_server" { type = string }
+variable "image_name" { type = string }
+variable "image_tag" {
+  type    = string
+  default = "latest"
+}
+variable "app_command_line" {
+  type    = string
+  default = ""
+}
+variable "container_port" {
+  type    = number
+  default = 8080
+}

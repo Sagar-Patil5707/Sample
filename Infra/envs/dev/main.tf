@@ -97,6 +97,20 @@ module "app" {
   # Example: put SQL connection string into app settings (fetched by MI from KV later)
   sql_server_fqdn   = module.sql.server_fqdn_private
   sql_database_name = module.sql.database_name
+
+  acr_login_server = module.acr.login_server
+  image_name       = "backend-api"
+  image_tag        = "latest"
+}
+
+module "acr" {
+  source                      = "../../modules/acr"
+  name_prefix                 = var.name_prefix
+  env                         = var.env
+  location                    = var.location
+  resource_group_name         = local.rg_name
+  app_service_mi_principal_id = module.app.app_identity_principal_id
+  tags                        = local.tags
 }
 
 module "swa" {
@@ -108,15 +122,33 @@ module "swa" {
   tags                = local.tags
 }
 
+# module "diagnostics" {
+#   source              = "../../modules/diagnostics"
+#   resource_group_name = local.rg_name
+#   workspace_id        = module.law.workspace_id
+
+#   targets = flatten([
+#     module.app.app_id,
+#     module.sql.server_id,
+#     module.kv.id,
+#     module.net.nsg_ids
+#   ])
+# }
+
 module "diagnostics" {
   source              = "../../modules/diagnostics"
+  workspace_id        = module.law.id # ✅ exported from log_analytics module
   resource_group_name = local.rg_name
-  workspace_id        = module.law.workspace_id
 
-  targets = flatten([
-    module.app.app_id,
-    module.sql.server_id,
-    module.kv.id,
-    module.net.nsg_ids
-  ])
+  targets = {
+    app      = module.app.id
+    kv       = module.kv.id
+    nsg_fe   = module.net.nsg_frontend_id
+    nsg_be   = module.net.nsg_backend_id
+    nsg_data = module.net.nsg_data_id
+    storage  = module.storage.id
+    sql_db   = module.sql.db_id
+    swa      = module.swa.id
+  }
 }
+
