@@ -1,8 +1,9 @@
 output "count" { value = length(var.targets) }
 
 output "diagnostic_summary" {
+  description = "Resources that have diagnostics attached"
   value = {
-    created = keys(local.filtered_resource_configs)
-    skipped = [for name, cfg in local.resource_configs : name if !(contains(keys(local.filtered_resource_configs), name))]
+    created = keys(var.targets)
   }
 }
+

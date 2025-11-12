@@ -135,20 +135,28 @@ module "swa" {
 #   ])
 # }
 
-module "diagnostics" {
+module "diag" {
   source              = "../../modules/diagnostics"
-  workspace_id        = module.law.id # ✅ exported from log_analytics module
   resource_group_name = local.rg_name
-
+  workspace_id        = module.law.workspace_id
+  env                 = var.env # 👈 important
   targets = {
-    app      = module.app.id
+    app      = module.app.app_id
     kv       = module.kv.id
-    nsg_fe   = module.net.nsg_frontend_id
-    nsg_be   = module.net.nsg_backend_id
-    nsg_data = module.net.nsg_data_id
-    storage  = module.storage.id
-    sql_db   = module.sql.db_id
-    swa      = module.swa.id
+    sql_db   = module.sql.server_id
+    storage  = module.storage.account_id
+    nsg_fe   = module.net.nsg_ids[0]
+    nsg_be   = module.net.nsg_ids[1]
+    nsg_data = module.net.nsg_ids[2]
   }
+
+  depends_on = [
+    module.app,
+    module.sql,
+    module.kv,
+    module.storage,
+    module.net
+  ]
 }
+
 
